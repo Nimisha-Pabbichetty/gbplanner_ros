@@ -1,7 +1,7 @@
 <launch>
 
   <!-- BEGIN ROBOT 1-->
-    <group ns="robot1">
+    <group ns="m100">
     <include file="$(find gbplanner)/launch/m100/1robot.launch" >
       <arg name="xm" value="0.0"/>
       <arg name="ym" value="0.5"/>
@@ -13,7 +13,7 @@
   </group>
 
   <!-- BEGIN ROBOT 2-->
-  <group ns="robot2">
+  <group ns="m101">
     <include file="$(find gbplanner)/launch/m100/1robot.launch" >
       <arg name="xm" value="-3.0"/>
       <arg name="ym" value="0.5"/>
