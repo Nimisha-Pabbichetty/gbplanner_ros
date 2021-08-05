@@ -3,6 +3,9 @@
 
 #include <chrono>
 #include <thread>
+#include <ctime>
+#include <algorithm>
+
 
 namespace explorer {
 
@@ -12,7 +15,7 @@ PlannerControlInterface::PlannerControlInterface(
     : nh_(nh), nh_private_(nh_private) {
   planner_status_pub_ =
       nh_.advertise<planner_msgs::PlannerStatus>("gbplanner_status", 5);
-
+  
   // Pose information.
   odometry_sub_ = nh_.subscribe(
       "odometry", 1, &PlannerControlInterface::odometryCallback, this);
@@ -20,7 +23,8 @@ PlannerControlInterface::PlannerControlInterface(
       nh_.subscribe("pose", 1, &PlannerControlInterface::poseCallback, this);
   pose_stamped_sub_ = nh_.subscribe(
       "pose_stamped", 1, &PlannerControlInterface::poseStampedCallback, this);
-
+  /*point_click_sub = nh_.subscribe(
+      "clicked_point", 1, &PlannerControlInterface::goToSelectedWaypointCallback, this); */
   // Services and several standard services accompanied for easier trigger.
   pci_server_ =
       nh_.advertiseService("planner_control_interface_trigger",
@@ -36,7 +40,11 @@ PlannerControlInterface::PlannerControlInterface(
   pci_initialization_server_ = nh_.advertiseService(
       "pci_initialization_trigger",
       &PlannerControlInterface::initializationCallback, this);
-  //
+  //adding drone path complete service
+  pci_drone_path_complete_server_ = 
+      nh_.advertiseService("drone_path_complete/std_srvs",
+                           &PlannerControlInterface::dronePathCompleteCallback, this);
+
   while (!(planner_client_ = nh.serviceClient<planner_msgs::planner_srv>(
                "planner_server", true))) {  // true for persistent
     ROS_WARN("PCI: service planner_server is not available: waiting...");
@@ -105,6 +113,15 @@ PlannerControlInterface::PlannerControlInterface(
   run();
 }
 
+bool PlannerControlInterface::dronePathCompleteCallback(std_srvs::Trigger::Request &req,
+                                                      std_srvs::Trigger::Response &res) {
+  planning_success_ = false;
+  res.success = true;
+  return true;
+}
+
+
+
 bool PlannerControlInterface::stdSrvsSetVerticalModeCallback(
     std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
   planner_msgs::planner_set_exp_mode set_mode_srv;
@@ -156,6 +173,26 @@ bool PlannerControlInterface::goToWaypointCallback(
   set_waypoint_.orientation.w = req.waypoint.orientation.w;
   return true;
 }
+
+/* void PlannerControlInterface::goToSelectedWaypointCallback(const geometry_msgs::PointStamped &msg) {
+  trigger_mode_ = PlannerTriggerModeType::kManual;
+  geometry_msgs::Pose clickPoint;
+  go_to_waypoint_request_ = true;
+  resetPlanner();
+  clickPoint.position.x = msg.point.x;
+  clickPoint.position.y = msg.point.y;
+  clickPoint.position.z = msg.point.z;
+  clickPoint.orientation.x = current_pose_.orientation.x;
+  clickPoint.orientation.y = current_pose_.orientation.y;
+  clickPoint.orientation.z = current_pose_.orientation.z;
+  clickPoint.orientation.w = current_pose_.orientation.w;
+  
+  //ROS_INFO("Inside goToSelectedWaypointCallback");
+  //pci_manager_->goToWaypoint(clickPoint); 
+  
+
+  } */
+
 
 bool PlannerControlInterface::globalPlannerCallback(
     planner_msgs::pci_global::Request &req,
@@ -325,10 +362,12 @@ bool PlannerControlInterface::init() {
   global_request_ = false;
   stop_planner_request_ = false;
   go_to_waypoint_request_ = false;
+  flag=0;
   // Wait for the system is ready.
   // For example: checking odometry is ready.
   ros::Rate rr(1);
   bool cont = true;
+  planning_success_=false;
   while (!pose_is_ready_) {
     ROS_WARN("Waiting for odometry.");
     ros::spinOnce();
@@ -357,10 +396,10 @@ void PlannerControlInterface::run() {
         runInitialization();
       }  // Priority 3: Stop.
       else if (stop_planner_request_) {
-        stop_planner_request_ = false;
+        stop_planner_request_ = false;       
         pci_manager_->goToWaypoint(current_pose_);
       } // Priority 4: Local Planning.
-      else if ((trigger_mode_ == PlannerTriggerModeType::kAuto) || (run_en_)) {
+      else if ((trigger_mode_ == PlannerTriggerModeType::kAuto) || (run_en_) && !planning_success_) {
         run_en_ = false;
         ROS_INFO_STREAM(
             "PlannerControlInterface: Running Planner ("
@@ -433,52 +472,57 @@ void PlannerControlInterface::runPlanner(bool exe_path = false) {
     plan_srv.request.header.frame_id = world_frame_id_;
     plan_srv.request.bound_mode = bound_mode_;
     plan_srv.request.root_pose = getPoseToStart();
-    if (planner_client_.call(plan_srv)) {
-      if (!plan_srv.response.path.empty()) {
-        // Execute path.
-        if (exe_path) {
-          if ((!force_forward_) ||
+    if(!planning_success_){
+      if (planner_client_.call(plan_srv)) {
+        if (!plan_srv.response.path.empty()) {
+          // Execute path.
+          if (exe_path) {
+            if ((!force_forward_) ||
               (plan_srv.response.status != plan_srv.response.kBackward) ||
               (ind == (kBBoxLevel - 1))) {
-            if (ind == (kBBoxLevel - 1))
+              if (ind == (kBBoxLevel - 1))
               ROS_WARN(
                   "Using minimum bound, pick the current best one regardless "
                   "the direction.");
-            current_path_.clear();
-            std::vector<geometry_msgs::Pose> path_to_be_exe;
-            PCIManager::ExecutionPathType path_type =
+              current_path_.clear();
+              std::vector<geometry_msgs::Pose> path_to_be_exe;
+              PCIManager::ExecutionPathType path_type =
                 PCIManager::ExecutionPathType::kLocalPath;
-            if (plan_srv.response.status == plan_srv.response.kHoming) {
+              if (plan_srv.response.status == plan_srv.response.kHoming) {
               // Perform homing step, set back to manual mode, and stop all
               // current requests.
-              resetPlanner();
-              path_type = PCIManager::ExecutionPathType::kHomingPath;
-            }
-            v_current_ = pci_manager_->getVelocity(path_type);
+                resetPlanner();
+                path_type = PCIManager::ExecutionPathType::kHomingPath;
+              }
+              v_current_ = pci_manager_->getVelocity(path_type);
             // Publish the status
-            publishPlannerStatus(plan_srv.response, true);
-            pci_manager_->executePath(plan_srv.response.path, path_to_be_exe,
-                                      path_type);
-            success = true;
-            current_path_ = path_to_be_exe;
-          } else if (ind < (kBBoxLevel - 1)) {
-            publishPlannerStatus(plan_srv.response, false);
-            ROS_WARN("Attemp to re-plan with smaller bound.");
-          }
+              publishPlannerStatus(plan_srv.response, true);
+              if(!pci_manager_->executePath(plan_srv.response.path, path_to_be_exe,
+                                      path_type)){
+                planning_success_=false;
+              }
+              else{
+                planning_success_=true;}
+              success = true;
+              current_path_ = path_to_be_exe;
+            } else if (ind < (kBBoxLevel - 1)) {
+               publishPlannerStatus(plan_srv.response, false);
+               ROS_WARN("Attemp to re-plan with smaller bound.");
+            }
         }
+      }   else {
+          publishPlannerStatus(plan_srv.response, false);
+          ROS_WARN_THROTTLE(1, "Planner returned an empty path");
+          ros::Duration(0.5).sleep();
+        }
+        planner_iteration_++;
+        if (success) break;
       } else {
-        publishPlannerStatus(plan_srv.response, false);
-        ROS_WARN_THROTTLE(1, "Planner returned an empty path");
+        ROS_WARN_THROTTLE(1, "Planner service failed");
         ros::Duration(0.5).sleep();
       }
-      planner_iteration_++;
-      if (success) break;
-    } else {
-      ROS_WARN_THROTTLE(1, "Planner service failed");
-      ros::Duration(0.5).sleep();
     }
   }
-
   // Reset default mode again.
   bound_mode_ = 0;
 }
@@ -501,6 +545,8 @@ void PlannerControlInterface::publishPlannerStatus(
   // planner_status_msg.exe_path_mode = res.exe_path_mode;
   planner_status_pub_.publish(planner_status_msg);
 }
+
+
 
 void PlannerControlInterface::runHoming(bool exe_path) {
   ROS_WARN("Start homing ...");

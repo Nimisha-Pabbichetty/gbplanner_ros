@@ -9,7 +9,7 @@ use_sparsity_compensation_factor: True
 sparsity_compensation_factor: 100.0 #10.0
 use_weight_dropoff: True
 voxel_carving_enabled: True
-color_mode: "color"
+color_mode: "height"
 verbose: False
 use_const_weight: True
 update_mesh_every_n_sec: 1.0

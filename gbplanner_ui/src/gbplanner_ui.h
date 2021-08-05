@@ -31,21 +31,33 @@ class gbplanner_panel : public rviz::Panel {
   virtual void save(rviz::Config config) const;
 
  public Q_SLOTS:
-  void on_start_planner_click();
-  void on_stop_planner_click();
-  void on_homing_click();
+  void on_start_planner_r0_click();
+  void on_stop_planner_r0_click();
+  void on_homing_r0_click();
   void on_global_planner_click();
+  void on_start_planner_r1_click();
+  void on_stop_planner_r1_click();
+  void on_homing_r1_click();
  protected Q_SLOTS:
 
  protected:
-  QPushButton* button_start_planner;
-  ros::ServiceClient planner_client_start_planner;
+  QPushButton* button_start_planner_r0;
+  ros::ServiceClient planner_client_start_planner_r0;
 
-  QPushButton* button_stop_planner;
-  ros::ServiceClient planner_client_stop_planner;
+  QPushButton* button_stop_planner_r0;
+  ros::ServiceClient planner_client_stop_planner_r0;
 
-  QPushButton* button_homing;
-  ros::ServiceClient planner_client_homing;
+  QPushButton* button_homing_r0;
+  ros::ServiceClient planner_client_homing_r0;
+
+  QPushButton* button_start_planner_r1;
+  ros::ServiceClient planner_client_start_planner_r1;
+
+  QPushButton* button_stop_planner_r1;
+  ros::ServiceClient planner_client_stop_planner_r1;
+
+  QPushButton* button_homing_r1;
+  ros::ServiceClient planner_client_homing_r1;
 
   QPushButton* button_global_planner;
   QLineEdit* global_id_line_edit;

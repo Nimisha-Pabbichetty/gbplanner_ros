@@ -9,7 +9,6 @@ Panels:
         - /Axes1/BaseLink1
         - /Odometry1/Shape1
         - /Odometry1/Covariance1
-        - /PlannerViz1
         - /PlannerViz1/RobotState1
         - /PlannerViz1/RobotState1/Namespaces1
         - /PlannerViz1/PlanningWorkspace1
@@ -31,24 +30,12 @@ Panels:
         - /Voxblox1/Occupied1
         - /Marker1
         - /SimArtifacts1
-        - /Axes2
         - /Axes2/BaseLink1
         - /Sensors2/VLP1
         - /PlannerViz2
-        - /PlannerViz2/RobotState1
-        - /PlannerViz2/GlobalGraph1
-        - /PlannerViz2/HomingPath1
-        - /PlannerViz2/Sampler1
         - /Voxblox2
-        - /Voxblox2/VoxbloxMesh1
-        - /Axes3
-        - /Axes3/BaseLink1
-        - /Sensors3/VLP1
-        - /PlannerViz3
-        - /PlannerViz3/GlobalGraph1
-        - /PlannerViz3/PlanningGlobalPath1
       Splitter Ratio: 0.43611112236976624
-    Tree Height: 615
+    Tree Height: 693
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -67,7 +54,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: VLP
   - Class: gbplanner_ui/GbPlanner Control
     Name: GbPlanner Control
 Preferences:
@@ -102,7 +89,7 @@ Visualization Manager:
           Length: 5
           Name: BaseLink
           Radius: 0.30000001192092896
-          Reference Frame: robot1/base_link
+          Reference Frame: r0/base_link
           Value: true
         - Class: rviz/Axes
           Enabled: true
@@ -162,7 +149,8 @@ Visualization Manager:
           Marker Topic: /r0/vis/planning_workspace
           Name: PlanningWorkspace
           Namespaces:
-            {}
+            global: true
+            local: true
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -191,7 +179,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /r0/vis/ref_path
+          Marker Topic: /r1/vis/ref_path
           Name: RefPath
           Namespaces:
             {}
@@ -212,8 +200,8 @@ Visualization Manager:
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
-            Max Value: 2.7159643173217773
-            Min Value: 0.13124001026153564
+            Max Value: 2.7243423461914062
+            Min Value: 0.13783955574035645
             Value: true
           Axis: Z
           Channel Name: intensity
@@ -245,7 +233,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /robot1/gbplanner_node/occupied_nodes
+          Marker Topic: /r0/gbplanner_node/occupied_nodes
           Name: Occupied
           Namespaces:
             {}
@@ -263,7 +251,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: false
-          Marker Topic: /robot1/gbplanner_node/occupied_nodes
+          Marker Topic: /r0/gbplanner_node/occupied_nodes
           Name: Occupied
           Namespaces:
             {}
@@ -310,7 +298,7 @@ Visualization Manager:
           Length: 5
           Name: BaseLink
           Radius: 0.30000001192092896
-          Reference Frame: robot2/base_link
+          Reference Frame: r1/base_link
           Value: true
         - Class: rviz/Axes
           Enabled: true
@@ -326,8 +314,8 @@ Visualization Manager:
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
-            Max Value: 2.7222654819488525
-            Min Value: 0.13856863975524902
+            Max Value: 2.722177028656006
+            Min Value: 0.14012682437896729
             Value: true
           Axis: Z
           Channel Name: intensity
@@ -407,7 +395,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /r1/vis/planning_global_path
+          Marker Topic: /r0/vis/planning_global_path
           Name: PlanningGlobalPath
           Namespaces:
             {}
@@ -425,7 +413,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: false
-          Marker Topic: /robot1/gbplanner_node/occupied_nodes
+          Marker Topic: /r0/gbplanner_node/occupied_nodes
           Name: Occupied
           Namespaces:
             {}
@@ -440,7 +428,7 @@ Visualization Manager:
           Length: 5
           Name: BaseLink
           Radius: 0.30000001192092896
-          Reference Frame: robot3/base_link
+          Reference Frame: r1/base_link
           Value: true
         - Class: rviz/Axes
           Enabled: true
@@ -456,8 +444,8 @@ Visualization Manager:
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
-            Max Value: 2.734689235687256
-            Min Value: 0.0662374496459961
+            Max Value: 2.722177028656006
+            Min Value: 0.14012682437896729
             Value: true
           Axis: Z
           Channel Name: intensity
@@ -478,7 +466,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /r2/velodyne_points
+          Topic: /r1/velodyne_points
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -489,7 +477,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /r2/vis/robot_state
+          Marker Topic: /r1/vis/robot_state
           Name: RobotState
           Namespaces:
             {}
@@ -497,7 +485,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /r2/vis/planning_workspace
+          Marker Topic: /r1/vis/planning_workspace
           Name: PlanningWorkspace
           Namespaces:
             {}
@@ -505,7 +493,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /r2/vis/planning_global_graph
+          Marker Topic: /r1/vis/planning_global_graph
           Name: GlobalGraph
           Namespaces:
             {}
@@ -513,7 +501,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /robot3/vis/planning_homing_path
+          Marker Topic: /r1/vis/planning_homing_path
           Name: HomingPath
           Namespaces:
             {}
@@ -521,7 +509,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /robot3/vis/sampler
+          Marker Topic: /r1/vis/sampler
           Name: Sampler
           Namespaces:
             {}
@@ -529,7 +517,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /robot3/vis/ref_path
+          Marker Topic: /r1/vis/ref_path
           Name: RefPath
           Namespaces:
             {}
@@ -537,7 +525,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /robot3/vis/planning_global_path
+          Marker Topic: /r0/vis/planning_global_path
           Name: PlanningGlobalPath
           Namespaces:
             {}
@@ -550,12 +538,12 @@ Visualization Manager:
         - Class: voxblox_rviz_plugin/VoxbloxMesh
           Enabled: true
           Name: VoxbloxMesh
-          Topic: /robot2/gbplanner_node/mesh
+          Topic: /r1/gbplanner_node/mesh
           Unreliable: false
           Value: true
         - Class: rviz/MarkerArray
           Enabled: false
-          Marker Topic: /robot1/gbplanner_node/occupied_nodes
+          Marker Topic: /r0/gbplanner_node/occupied_nodes
           Name: Occupied
           Namespaces:
             {}
@@ -606,10 +594,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3397962749004364
+      Pitch: 0.4747961759567261
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.4853904247283936
+      Yaw: 4.300391674041748
     Saved: ~
 Window Geometry:
   Displays:
@@ -619,7 +607,7 @@ Window Geometry:
   Height: 1023
   Hide Left Dock: false
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a000003a5fc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000002a4000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d0061006700650000000190000002310000000000000000fb0000000c00430061006d00650072006100000003affffffff60000000000000000fb0000000a0049006d00610067006501000002dc000000c90000000000000000fb00000022004700620050006c0061006e006e0065007200200043006f006e00740072006f006c01000002e7000000fb000000fb00ffffff000000010000010f00000399fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000002800000399000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004f30000003bfc0100000002fb0000000800540069006d0065020000024500000258000004f5000001e0fb0000000800540069006d0065010000000000000450000000000000000000000383000003a500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a000003a5fc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000002f2000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d0061006700650000000190000002310000000000000000fb0000000c00430061006d00650072006100000003affffffff60000000000000000fb0000000a0049006d00610067006501000002dc000000c90000000000000000fb00000022004700620050006c0061006e006e0065007200200043006f006e00740072006f006c0100000335000000ad0000009e00ffffff000000010000010f00000399fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000002800000399000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004f30000003bfc0100000002fb0000000800540069006d0065020000024500000258000004f5000001e0fb0000000800540069006d0065010000000000000450000000000000000000000383000003a500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:

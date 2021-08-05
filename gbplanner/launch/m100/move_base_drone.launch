@@ -1,0 +1,46 @@
+<launch>
+    <arg name="base_global_planner" default="navfn/NavfnROS"/>
+    <arg name="base_local_planner" default="dwa_local_planner/DWAPlannerROS"/>
+    
+    <arg name="robot_name" default="m100"/>
+    <arg name="odometryTopic" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_map_frame" args="0 0 0 0 0 0 /map /world 100" />
+    
+    <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+        <remap from="/cloud_in" to="/m100/velodyne_points"/>
+        <param name="angle_min" value="-3.1459"/>
+        <param name="angle_max" value="3.1459"/>
+        <param name="range_min" value="0.0"/>
+        <param name="range_max" value="10.0"/>
+        <param name="min_height" value="-0.20"/>
+        <param name="max_height" value="0.1"/>
+    </node>
+
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    
+        <param name="base_global_planner" value="$(arg base_global_planner)"/>
+        <param name="base_local_planner" value="$(arg base_local_planner)"/>
+        <!-- param name="recovery_behaviors" value=" [{name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery}]" -->  
+        <rosparam file="$(find gbplanner)/config/m100/planner.yaml" command="load"/>
+
+        <!-- observation sources located in costmap_common.yaml -->
+        <rosparam file="$(find gbplanner)/config/m100/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find gbplanner)/config/m100/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        
+        <!-- local costmap, needs size -->
+        <rosparam file="$(find gbplanner)/config/m100/local_costmap_params.yaml" command="load" ns="local_costmap" />
+        <param name="local_costmap/width" value="5.0"/>
+        <param name="local_costmap/height" value="5.0"/>
+        <rosparam file="$(find gbplanner)/config/m100/local_costmap_params.yaml" command="load" ns="global_costmap" />
+        <!-- param name="global_costmap/width" value="25.0"-->
+        <!-- param name="global_costmap/height" value="25.0"-->
+
+        <param name="global_costmap/global_frame" value="map"/>
+        <param name="local_costmap/global_frame" value="world"/>
+        <param name="global_costmap/robot_base_frame" value="$(arg robot_name)/base_link"/>
+        <param name="local_costmap/robot_base_frame" value="$(arg robot_name)/base_link"/>
+        <remap from="odom" to="$(arg odometryTopic)"/> 
+    </node>
+
+</launch>
+

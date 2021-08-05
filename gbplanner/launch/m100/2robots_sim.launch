@@ -1,4 +1,3 @@
-
 <launch>
 
   <arg name="gazebo_gui_en" default="false"/>
@@ -138,6 +137,6 @@
     </node> 
 </group> 
 
-<node pkg="rviz" type="rviz" name="gbplanner_ui" output="screen" args="-d $(find gbplanner)/config/rviz/robot1.rviz"/>
+<node pkg="rviz" type="rviz" name="gbplanner_ui" output="screen" args="-d $(find gbplanner)/config/rviz/2robots_sim.rviz"/>
 
 </launch>

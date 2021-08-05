@@ -52,7 +52,7 @@ BoundedSpaceParams:
   Local:
     type:           kCuboid
     min_val:        [-15.0, -15.0, -1.0]
-    max_val:        [15.0,15.0, 1.0]
+    max_val:        [15.0, 15.0, 1.0]
     min_extension:  [-20.0, -20.0, -3.0]
     max_extension:  [20.0, 20.0, 3.0]
   LocalSearch:
@@ -130,8 +130,8 @@ PlanningParams:
   auto_homing_enable: false
   time_budget_limit: 600
   homing_backward: true
-  geofence_checking_enable: false
-  path_safety_enhance_enable: false
+  geofence_checking_enable: true
+  path_safety_enhance_enable: true
 
 GeofenceParams:
   AreaList: ["GBack"]

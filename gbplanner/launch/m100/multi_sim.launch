@@ -9,6 +9,7 @@
   <!-- Config files -->
   <arg name="world_file" default="$(find planner_gazebo_sim)/worlds/pittsburgh_mine.world"/>
 
+  
   <!-- ROS Gazebo  -->
   <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find planner_gazebo_sim)/models"/>
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -19,8 +20,10 @@
     <arg name="verbose" value="false"/>
   </include>
   
+
   
   <include file="$(find gbplanner)/launch/m100/robots.launch"/>
+  
   <node pkg="rviz" type="rviz" name="gbplanner_ui" output="screen" args="-d $(find gbplanner)/config/rviz/m100_sim.rviz"/>
 
 

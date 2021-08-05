@@ -8,7 +8,7 @@
 #include <std_srvs/Empty.h>
 #include <std_srvs/Trigger.h>
 #include <tf/tf.h>
-
+#include <geometry_msgs/PointStamped.h>
 #include <eigen3/Eigen/Dense>
 
 #include "planner_control_interface/pci_manager.h"
@@ -57,6 +57,7 @@ class PlannerControlInterface {
  private:
   ros::Publisher planner_status_pub_;
   ros::Subscriber odometry_sub_;
+  //ros::Subscriber point_click_sub;
   ros::Subscriber pose_sub_;
   ros::Subscriber pose_stamped_sub_;
   ros::ServiceClient planner_client_;
@@ -81,6 +82,8 @@ class PlannerControlInterface {
   ros::ServiceServer pci_to_waypoint_server_;
   ros::ServiceServer pci_std_set_vertical_exp_server_;
   ros::ServiceServer pci_std_set_horizontal_exp_server_;
+  ros::ServiceServer pci_drone_path_complete_server_;
+
 
   std::shared_ptr<PCIManager> pci_manager_;
   uint8_t bound_mode_;
@@ -94,6 +97,8 @@ class PlannerControlInterface {
   bool init_request_;
   bool global_request_;
   bool stop_planner_request_;
+  bool planning_success_;
+  int flag;
 
   geometry_msgs::Pose set_waypoint_;
   bool go_to_waypoint_request_;
@@ -144,6 +149,7 @@ class PlannerControlInterface {
                            planner_msgs::pci_geofence::Response &res);
   bool goToWaypointCallback(planner_msgs::pci_to_waypoint::Request &req,
                             planner_msgs::pci_to_waypoint::Response &res);
+  //void goToSelectedWaypointCallback(const geometry_msgs::PointStamped &msg);
 
   bool rotate180DegCallback(std_srvs::Trigger::Request &req,
                             std_srvs::Trigger::Response &res);
@@ -154,6 +160,9 @@ class PlannerControlInterface {
                                       std_srvs::Empty::Response &res);
   bool stdSrvsSetHorizontalModeCallback(std_srvs::Empty::Request &req,
                                         std_srvs::Empty::Response &res);
+  bool dronePathCompleteCallback(std_srvs::Trigger::Request &req,
+                                                      std_srvs::Trigger::Response &res); 
+
   void resetPlanner();
 
   bool loadParams();

@@ -1,12 +1,14 @@
 <launch>
   <!-- All settings -->
   <arg name="robot_name" default="m100"/>
-  <arg name="gazebo_gui_en" default="true"/>
+  <arg name="gazebo_gui_en" default="false"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="rviz_en" default="true" />
   <arg name="launch_prefix" default=""/> <!-- gdb -ex run //args -->
   <param name="use_sim_time" value="$(arg use_sim_time)"/>
+  <arg name="pointcloud_topic" default="/os_cloud_node/points"/>
 
+  <arg name="min_area_update" value="1000" />
   <!-- Config files -->
   <arg name="gbplanner_config_file" default="$(find gbplanner)/config/$(arg robot_name)/gbplanner_config.yaml"/>
   <arg name="pci_file" default="$(find gbplanner)/config/$(arg robot_name)/planner_control_interface_sim_config.yaml"/>
@@ -74,6 +76,22 @@
     <remap from="odometry" to="$(arg odometry_topic)"/>
     <rosparam command="load" file="$(arg pci_file)" />
   </node>
+<!-- Path executioner -->
+  <node name="path_exec" pkg="gbplanner" type="drone_path_execution.py" output="screen">
+    <param name="send_only_last_pose" value="true"/>
+    <param name="global_frame_id" value="world"/>
+    <param name="distance_threshold" value="1.0"/>
+    <remap from="waypoint" to="clicked_point"/>
+    <param name="min_area_update" value="$(arg min_area_update)"/>
+  </node> 
+
+<!-- Move base controller -->
+  <include file="$(find gbplanner)/launch/m100/move_base_drone.launch">
+     <arg name="robot_name" value="$(arg robot_name)"/>
+     <arg name="odometryTopic" value="$(arg odometry_topic)" />
+     <remap from="$(arg robot_name)/map" to="world" />
+  </include> 
+
 
   <node pkg="rviz" type="rviz" name="gbplanner_ui" output="screen" args="-d $(find gbplanner)/config/rviz/m100_sim.rviz"/>
 

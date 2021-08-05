@@ -1,4 +1,3 @@
-
 <launch>
 
   <arg name="gazebo_gui_en" default="false"/>
@@ -28,6 +27,7 @@
     <arg name="octomap_config_file" default="$(find gbplanner)/config/$(arg robot_name)/octomap_sim_config.yaml"/>
     <arg name="voxblox_config_file" default="$(find gbplanner)/config/$(arg robot_name)/voxblox_sim_config.yaml"/>
     <arg name="map_config_file" default="$(arg voxblox_config_file)"/>
+
 
     <!-- Static TF -->
     <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)_tf_53" args="0 0 0 0 0 0 world $(arg robot_name)/navigation 100" />
@@ -82,12 +82,12 @@
 
 <group ns="robot2">
     <arg name="robot_name" default="robot2"/>
-     <!-- Config files  -->
     <arg name="gbplanner_config_file" default="$(find gbplanner)/config/$(arg robot_name)/gbplanner_config.yaml"/>
     <arg name="pci_file" default="$(find gbplanner)/config/$(arg robot_name)/planner_control_interface_sim_config.yaml"/>
     <arg name="octomap_config_file" default="$(find gbplanner)/config/$(arg robot_name)/octomap_sim_config.yaml"/>
     <arg name="voxblox_config_file" default="$(find gbplanner)/config/$(arg robot_name)/voxblox_sim_config.yaml"/>
     <arg name="map_config_file" default="$(arg voxblox_config_file)"/>
+
 
     <!-- Static TF -->
     <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)_tf_53" args="0 0 0 0 0 0 world $(arg robot_name)/navigation 100" />
@@ -140,12 +140,13 @@
 
 <group ns="robot3">
     <arg name="robot_name" default="robot3"/>
-     <!-- Config files  -->
+    <!-- Config files  -->
     <arg name="gbplanner_config_file" default="$(find gbplanner)/config/$(arg robot_name)/gbplanner_config.yaml"/>
     <arg name="pci_file" default="$(find gbplanner)/config/$(arg robot_name)/planner_control_interface_sim_config.yaml"/>
     <arg name="octomap_config_file" default="$(find gbplanner)/config/$(arg robot_name)/octomap_sim_config.yaml"/>
     <arg name="voxblox_config_file" default="$(find gbplanner)/config/$(arg robot_name)/voxblox_sim_config.yaml"/>
     <arg name="map_config_file" default="$(arg voxblox_config_file)"/>
+
 
     <!-- Static TF -->
     <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)_tf_53" args="0 0 0 0 0 0 world $(arg robot_name)/navigation 100" />
@@ -196,6 +197,6 @@
     </node> 
 </group> 
 
-<node pkg="rviz" type="rviz" name="gbplanner_ui" output="screen" args="-d $(find gbplanner)/config/rviz/2robots.rviz"/>
+<node pkg="rviz" type="rviz" name="gbplanner_ui" output="screen" args="-d $(find gbplanner)/config/rviz/3robots.rviz"/>
 
 </launch>
