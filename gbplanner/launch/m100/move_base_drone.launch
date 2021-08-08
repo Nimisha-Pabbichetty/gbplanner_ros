@@ -35,7 +35,7 @@
         <!-- param name="global_costmap/width" value="25.0"-->
         <!-- param name="global_costmap/height" value="25.0"-->
 
-        <param name="global_costmap/global_frame" value="map"/>
+        <param name="global_costmap/global_frame" value="world"/>
         <param name="local_costmap/global_frame" value="world"/>
         <param name="global_costmap/robot_base_frame" value="$(arg robot_name)/base_link"/>
         <param name="local_costmap/robot_base_frame" value="$(arg robot_name)/base_link"/>

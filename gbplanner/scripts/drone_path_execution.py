@@ -5,7 +5,7 @@
 
 from math import pow, atan2, sqrt, cos, sin
 import rospy
-from geometry_msgs.msg import PoseStamped, Pose, PointStamped
+from geometry_msgs.msg import PoseStamped, Pose, PointStamped, Twist, Transform, Quaternion,Point
 from actionlib_msgs.msg import GoalStatusArray
 import tf
 from nav_msgs.msg import Odometry
@@ -13,14 +13,19 @@ from trajectory_msgs.msg import MultiDOFJointTrajectory, MultiDOFJointTrajectory
 from std_srvs.srv import Trigger, TriggerRequest, SetBool, SetBoolRequest
 from visualization_msgs.msg import Marker, MarkerArray
 from sensor_msgs.msg import PointCloud2
+from std_msgs.msg import Header
+import mav_msgs.msg
+
 
 class drone_path_execution:
     def __init__(self):
         self.SetCmdTrajSub = rospy.Subscriber('m100/command/trajectory', MultiDOFJointTrajectory, self.update_trajectory, queue_size=100)
+        #self.SetCmdTrajSub = rospy.Subscriber('m100/move_base/command/trajectory', MultiDOFJointTrajectory, self.update_trajectory, queue_size=100)
         #self.CmdVelSub = rospy.Subscriber('cmd_vel', Twist, self.update_lee_controller, queue_size=100)
         self.LocalOdomSub = rospy.Subscriber('m100/ground_truth/odometry_throttled', Odometry, self.update_local_pos, queue_size=100)  
         self.SubsampleSub = rospy.Subscriber('gbplanner_node/occupied_nodes', MarkerArray, self.subsample_map, queue_size=1)
         self.MapPub = rospy.Publisher('output_map', MarkerArray, queue_size=1)
+        #self.CmdTrajPub = rospy.Publisher('m100/command/trajectory', MultiDOFJointTrajectory, queue_size=10)
         self.PointCloudSub = rospy.Subscriber('gbplanner_node/surface_pointcloud', PointCloud2, self.subsample_pointcloud, queue_size=1)
         self.PointCloudPub = rospy.Publisher('output_pointcloud', PointCloud2, queue_size=1)
         self.MoveBaseStatusSub = rospy.Subscriber('move_base/status', GoalStatusArray, self.goal_status_update, queue_size=100) 
@@ -37,6 +42,11 @@ class drone_path_execution:
         self.previous_map = MarkerArray()
         self.previous_map.markers.append(Marker())
         self.previous_pointcloud = PointCloud2()
+        self.count=0
+        self.linear_velocity_vector_length_x=0.3 #min 0.3 for movement
+        self.linear_velocity_vector_length_y=0.3
+        self.linear_velocity_vector_length_z=0.3
+        self.angular_velocity_vector_length=0.2
         # Parameters
         self.send_only_last_pose = rospy.get_param("~send_only_last_pose", True)
         self.distance_threshold = rospy.get_param("~distance_threshold", 0.2)
@@ -44,8 +54,50 @@ class drone_path_execution:
         self.new_area_min = rospy.get_param("~min_area_update", 1000)
         print("Min area update : ", str(self.new_area_min))
 
-    #def update_lee_controller(self,twist):
-        #converting twist to multidoftrajectory to publish to lee position controller
+    '''def update_lee_controller(self,twist):
+        #converting Twist to MultiDOFTrajectory to publish to lee position controller node
+        #transform = self.current_trajectory.points[self.current_trajectory_index].transforms[0]
+        #self.setpoint_controller = PoseStamped()
+        trajectory_point_=Point()
+        quat=Quaternion()
+        if(twist.linear.x>=0):
+            trajectory_point_.x = self.odom_pos.pose.position.x+self.linear_velocity_vector_length   
+        elif(twist.linear.x<0):
+            trajectory_point_.x = self.odom_pos.pose.position.x-self.linear_velocity_vector_length
+
+        if(twist.linear.y>=0):
+            trajectory_point_.y = self.odom_pos.pose.position.y+self.linear_velocity_vector_length   
+        elif(twist.linear.y<0):
+            trajectory_point_.y = self.odom_pos.pose.position.y-self.linear_velocity_vector_length
+
+        if(twist.linear.z>=0):
+            trajectory_point_.z = self.odom_pos.pose.position.z+self.linear_velocity_vector_length   
+        elif(twist.linear.z<0):
+            trajectory_point_.z = self.odom_pos.pose.position.z-self.linear_velocity_vector_length
+
+        if(twist.angular.z>0):
+            quat.z= self.odom_pos.pose.orientation.z+ self.angular_velocity_vector_length   
+        elif(twist.angular.z<0):
+            quat.z = self.odom_pos.pose.orientation.z-self.angular_velocity_vector_length
+        
+        traj = MultiDOFJointTrajectory()
+
+        header = Header()
+        header.stamp = rospy.Time()
+        header.frame_id = self.global_frame_id
+        traj.header=header
+
+        transforms =Transform(translation=trajectory_point_, rotation=quat)
+
+        velocities =twist
+        accelerations=Twist()
+        point = MultiDOFJointTrajectoryPoint([transforms],[velocities],[accelerations],rospy.Time(2))
+        traj.points.append(point)
+        self.count+=1
+        if(self.count==5):
+            self.CmdTrajPub.publish(traj)
+            self.count=0'''
+            
     def subsample_pointcloud(self, data):
         
         if len(data.fields) > len(self.previous_pointcloud.fields) + self.new_area_min:
@@ -63,6 +115,7 @@ class drone_path_execution:
         self.odom_pos=PoseStamped()
         self.odom_pos.header.stamp = data.header.stamp
         self.odom_pos.pose.position = data.pose.pose.position
+        #self.odom_pos.pose.position.z =1.0
         self.odom_pos.pose.orientation = data.pose.pose.orientation     
     
     def goal_status_update(self, status):
