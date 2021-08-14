@@ -401,6 +401,7 @@ void PlannerControlInterface::run() {
       } // Priority 4: Local Planning.
       else if ((trigger_mode_ == PlannerTriggerModeType::kAuto) || (run_en_) && !planning_success_) {
         run_en_ = false;
+        //planning_success_=false;
         ROS_INFO_STREAM(
             "PlannerControlInterface: Running Planner ("
             << std::string(trigger_mode_ == PlannerTriggerModeType::kAuto
@@ -429,14 +430,16 @@ void PlannerControlInterface::run() {
 }
 
 void PlannerControlInterface::runGlobalPlanner(bool exe_path = false) {
-  ROS_INFO("Planning iteration %i", planner_iteration_);
+  ROS_INFO_THROTTLE(1,"Planning iteration %i", planner_iteration_);
   planner_msgs::planner_global plan_srv;
   plan_srv.request.id = pci_global_request_params_.id;
   plan_srv.request.not_check_frontier =
       pci_global_request_params_.not_check_frontier;
   plan_srv.request.ignore_time = pci_global_request_params_.ignore_time;
   if (planner_global_client_.call(plan_srv)) {
+    //ROS_INFO("global 1");
     if ((exe_path) && (!plan_srv.response.path.empty())) {
+      //ROS_INFO("global 2");
       // Execute path.
       std::vector<geometry_msgs::Pose> path_to_be_exe;
       pci_manager_->executePath(plan_srv.response.path, path_to_be_exe,
@@ -465,18 +468,23 @@ void PlannerControlInterface::runPlanner(bool exe_path = false) {
     if (stop_planner_request_) return;
 
     bound_mode_ = ind;
-    ROS_INFO("Planning iteration %i", planner_iteration_);
+     ROS_INFO_THROTTLE(1,"Planning iteration %i", planner_iteration_);
     planner_msgs::planner_srv plan_srv;
     plan_srv.request.header.stamp = ros::Time::now();
     plan_srv.request.header.seq = planner_iteration_;
     plan_srv.request.header.frame_id = world_frame_id_;
     plan_srv.request.bound_mode = bound_mode_;
     plan_srv.request.root_pose = getPoseToStart();
+    //ROS_INFO("above if chain");
     if(!planning_success_){
+      //ROS_INFO("!planning successful");
       if (planner_client_.call(plan_srv)) {
+        //ROS_INFO("client call successful");
         if (!plan_srv.response.path.empty()) {
+          //ROS_INFO("path not empty");
           // Execute path.
           if (exe_path) {
+            //ROS_INFO("exe_path is true");
             if ((!force_forward_) ||
               (plan_srv.response.status != plan_srv.response.kBackward) ||
               (ind == (kBBoxLevel - 1))) {

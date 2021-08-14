@@ -15,17 +15,18 @@ from visualization_msgs.msg import Marker, MarkerArray
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Header
 import mav_msgs.msg
-
-
+from bisect import bisect
+import numpy as np
+from tf.transformations import euler_from_quaternion, quaternion_from_euler,                       quaternion_matrix, quaternion_from_matrix
 class drone_path_execution:
     def __init__(self):
-        self.SetCmdTrajSub = rospy.Subscriber('m100/command/trajectory', MultiDOFJointTrajectory, self.update_trajectory, queue_size=100)
-        #self.SetCmdTrajSub = rospy.Subscriber('m100/move_base/command/trajectory', MultiDOFJointTrajectory, self.update_trajectory, queue_size=100)
-        #self.CmdVelSub = rospy.Subscriber('cmd_vel', Twist, self.update_lee_controller, queue_size=100)
+        #self.SetCmdTrajSub = rospy.Subscriber('m100/command/trajectory', MultiDOFJointTrajectory, self.update_trajectory, queue_size=100)
+        self.SetCmdTrajSub = rospy.Subscriber('m100/move_base/command/trajectory', MultiDOFJointTrajectory, self.update_trajectory, queue_size=100)
+        self.CmdVelSub = rospy.Subscriber('cmd_vel', Twist, self.update_lee_controller, queue_size=100)
+        self.CmdTrajPub = rospy.Publisher('m100/command/trajectory', MultiDOFJointTrajectory, queue_size=10)
         self.LocalOdomSub = rospy.Subscriber('m100/ground_truth/odometry_throttled', Odometry, self.update_local_pos, queue_size=100)  
         self.SubsampleSub = rospy.Subscriber('gbplanner_node/occupied_nodes', MarkerArray, self.subsample_map, queue_size=1)
-        self.MapPub = rospy.Publisher('output_map', MarkerArray, queue_size=1)
-        #self.CmdTrajPub = rospy.Publisher('m100/command/trajectory', MultiDOFJointTrajectory, queue_size=10)
+        self.MapPub = rospy.Publisher('output_map', MarkerArray, queue_size=1)        
         self.PointCloudSub = rospy.Subscriber('gbplanner_node/surface_pointcloud', PointCloud2, self.subsample_pointcloud, queue_size=1)
         self.PointCloudPub = rospy.Publisher('output_pointcloud', PointCloud2, queue_size=1)
         self.MoveBaseStatusSub = rospy.Subscriber('move_base/status', GoalStatusArray, self.goal_status_update, queue_size=100) 
@@ -43,10 +44,10 @@ class drone_path_execution:
         self.previous_map.markers.append(Marker())
         self.previous_pointcloud = PointCloud2()
         self.count=0
-        self.linear_velocity_vector_length_x=0.3 #min 0.3 for movement
-        self.linear_velocity_vector_length_y=0.3
-        self.linear_velocity_vector_length_z=0.3
-        self.angular_velocity_vector_length=0.2
+        self.linear_velocity_vector_length_x=0.0 #min 0.3 for movement
+        self.linear_velocity_vector_length_y=0.0
+        #self.linear_velocity_vector_length_z=1.6
+        self.angular_velocity_vector_length=0.0
         # Parameters
         self.send_only_last_pose = rospy.get_param("~send_only_last_pose", True)
         self.distance_threshold = rospy.get_param("~distance_threshold", 0.2)
@@ -54,36 +55,92 @@ class drone_path_execution:
         self.new_area_min = rospy.get_param("~min_area_update", 1000)
         print("Min area update : ", str(self.new_area_min))
 
-    '''def update_lee_controller(self,twist):
+    def vlengthx(self,x_vel, breakpoints=[0,0.01,0.1,0.25,0.5],x_length=[0,0.05,0.1,0.7,0.8,0.9]):
+        i=bisect(breakpoints,x_vel)
+        return x_length[i]
+
+    def vlengthy(self,y_vel, breakpoints=[0,0.01,0.05,0.1,0.17,0.25],y_length=[0,0.005,0.01,0.075,0.1,0.2,0.35]):
+        i=bisect(breakpoints,y_vel)
+        return y_length[i]
+
+    '''def vlengthz(self,z_vel, breakpoints=[0,0.00001,0.001,0.1,1],z_length=[0,0.005,0.01,0.05,0.1,0.15]):
+        i=bisect(breakpoints,z_vel)
+        return z_length[i]'''
+
+    def angvlengthz(self,z_angvel, breakpoints=[0,0.001,0.01,0.1,0.25],z_length=[0,0.005,0.01,0.05,0.075,0.1]):
+        i=bisect(breakpoints,z_angvel)
+        return z_length[i]
+
+
+    def PoseStamped_2_mat(self,p):
+        q = p.pose.orientation
+        pos = p.pose.position
+        T = quaternion_matrix([q.x,q.y,q.z,q.w])
+        T[:3,3] = np.array([pos.x,pos.y,pos.z])
+        return T
+
+    def Mat_2_posestamped(self,m,f_id="base_link"):
+        q = quaternion_from_matrix(m)
+        p = PoseStamped(header = Header(frame_id=f_id), #robot.get_planning_frame()
+                    pose=Pose(position=Point(*m[:3,3]), 
+                    orientation=Quaternion(*q)))
+        return p
+
+    def T_inv(self,T_in):
+        R_in = T_in[:3,:3]
+        t_in = T_in[:3,[-1]]
+        R_out = R_in.T
+        t_out = -np.matmul(R_out,t_in)
+        return np.vstack((np.hstack((R_out,t_out)),np.array([0, 0, 0, 1])))
+
+    def update_lee_controller(self,twist):
         #converting Twist to MultiDOFTrajectory to publish to lee position controller node
         #transform = self.current_trajectory.points[self.current_trajectory_index].transforms[0]
         #self.setpoint_controller = PoseStamped()
         trajectory_point_=Point()
         quat=Quaternion()
+        x_vel=twist.linear.x
+        y_vel=twist.linear.y
+        #z_vel=twist.linear.z
+        z_angvel=twist.angular.z
+        self.linear_velocity_vector_length_x=self.vlengthx(abs(x_vel))
+        self.linear_velocity_vector_length_y=self.vlengthy(abs(y_vel))
+        #self.linear_velocity_vector_length_z=self.vlengthz(z_vel)
+        self.angular_velocity_vector_length_z=self.angvlengthz(abs(z_angvel))
+
+        trajectory_point_.z=1.78
+
+
+        LocalPose = self.PoseStamped_2_mat(self.odom_pos)
+        GoalPose = self.PoseStamped_2_mat(self.current_setpoint)
+        LocalPoseInv=self.T_inv(LocalPose)
+        Diff=np.matmul(GoalPose,LocalPoseInv)
+        SetPose= self.Mat_2_posestamped(Diff, f_id="base_link")
+
         if(twist.linear.x>=0):
-            trajectory_point_.x = self.odom_pos.pose.position.x+self.linear_velocity_vector_length   
+            trajectory_point_.x = SetPose.pose.position.x+self.linear_velocity_vector_length_x   
         elif(twist.linear.x<0):
-            trajectory_point_.x = self.odom_pos.pose.position.x-self.linear_velocity_vector_length
+            trajectory_point_.x = SetPose.pose.position.x-self.linear_velocity_vector_length_x
 
         if(twist.linear.y>=0):
-            trajectory_point_.y = self.odom_pos.pose.position.y+self.linear_velocity_vector_length   
+            trajectory_point_.y = SetPose.pose.position.y+self.linear_velocity_vector_length_y   
         elif(twist.linear.y<0):
-            trajectory_point_.y = self.odom_pos.pose.position.y-self.linear_velocity_vector_length
+            trajectory_point_.y = SetPose.pose.position.y-self.linear_velocity_vector_length_y
 
-        if(twist.linear.z>=0):
-            trajectory_point_.z = self.odom_pos.pose.position.z+self.linear_velocity_vector_length   
+        '''if(twist.linear.z>=0):
+            trajectory_point_.z = SetPose.pose.position.z+self.linear_velocity_vector_length_z   
         elif(twist.linear.z<0):
-            trajectory_point_.z = self.odom_pos.pose.position.z-self.linear_velocity_vector_length
+            trajectory_point_.z = SetPose.pose.position.z-self.linear_velocity_vector_length_z'''
 
         if(twist.angular.z>0):
-            quat.z= self.odom_pos.pose.orientation.z+ self.angular_velocity_vector_length   
+            quat.z= SetPose.pose.orientation.z+ self.angular_velocity_vector_length   
         elif(twist.angular.z<0):
-            quat.z = self.odom_pos.pose.orientation.z-self.angular_velocity_vector_length
-        
+            quat.z = SetPose.pose.orientation.z-self.angular_velocity_vector_length
+        quat.w=0.99
         traj = MultiDOFJointTrajectory()
 
         header = Header()
-        header.stamp = rospy.Time()
+        header.stamp = rospy.Time.now()
         header.frame_id = self.global_frame_id
         traj.header=header
 
@@ -94,9 +151,9 @@ class drone_path_execution:
         point = MultiDOFJointTrajectoryPoint([transforms],[velocities],[accelerations],rospy.Time(2))
         traj.points.append(point)
         self.count+=1
-        if(self.count==5):
+        if(self.count==8):
             self.CmdTrajPub.publish(traj)
-            self.count=0'''
+            self.count=0
             
     def subsample_pointcloud(self, data):
         
@@ -115,7 +172,7 @@ class drone_path_execution:
         self.odom_pos=PoseStamped()
         self.odom_pos.header.stamp = data.header.stamp
         self.odom_pos.pose.position = data.pose.pose.position
-        #self.odom_pos.pose.position.z =1.0
+        self.odom_pos.pose.position.z =1.78
         self.odom_pos.pose.orientation = data.pose.pose.orientation     
     
     def goal_status_update(self, status):
@@ -134,7 +191,7 @@ class drone_path_execution:
         self.current_setpoint.header.frame_id = self.global_frame_id
         self.current_setpoint.pose.position.x = transform.translation.x
         self.current_setpoint.pose.position.y = transform.translation.y
-        self.current_setpoint.pose.position.z = self.odom_pos.pose.position.z
+        self.current_setpoint.pose.position.z =  self.odom_pos.pose.position.z
         self.current_setpoint.pose.orientation = transform.rotation
         self.current_trajectory_index = self.current_trajectory_index + 1
         self.GoalPub.publish(self.current_setpoint)
@@ -153,12 +210,17 @@ class drone_path_execution:
 
     def set_waypoint(self, waypoint):
         self.waypoint_mode = True
+        quat=Quaternion()
+        quat.x=0
+        quat.y=0
+        quat.z=0
+        quat.w=1
         self.current_setpoint = PoseStamped()
         self.current_setpoint.header.frame_id = self.global_frame_id
         self.current_setpoint.pose.position.x = waypoint.point.x
         self.current_setpoint.pose.position.y = waypoint.point.y
-        self.current_setpoint.pose.position.z = self.odom_pos.pose.position.z
-        self.current_setpoint.pose.orientation = self.odom_pos.pose.orientation
+        self.current_setpoint.pose.position.z = 1.78
+        self.current_setpoint.pose.orientation = quat
         self.GoalPub.publish(self.current_setpoint)
         print("Goto waypoint: x=",self.current_setpoint.pose.position.x,", y=",self.current_setpoint.pose.position.y,", z=",self.current_setpoint.pose.position.z)
     

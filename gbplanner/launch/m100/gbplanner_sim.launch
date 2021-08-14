@@ -70,7 +70,7 @@
 
   <!-- Planner and Control Interface -->
   <node pkg="pci_mav" type="pci_mav_ros_node" name="pci_mav_ros_node" output="screen">
-    <remap from="command/trajectory" to="$(arg robot_name)/command/trajectory" />
+    <remap from="command/trajectory" to="$(arg robot_name)/move_base/command/trajectory" />
     <remap from="planner_server" to="gbplanner" />
     <remap from="planner_homing_server" to="gbplanner/homing" />
     <remap from="odometry" to="$(arg odometry_topic)"/>

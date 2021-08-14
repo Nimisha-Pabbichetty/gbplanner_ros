@@ -1,5 +1,5 @@
 controller_frequency: 5.0
-recovery_behaviour_enabled: true
+recovery_behaviour_enabled: false
 
 NavfnROS:
   allow_unknown: true # Specifies whether or not to allow navfn to create plans that traverse unknown space.
@@ -31,16 +31,16 @@ TrajectoryPlannerROS:
   latch_xy_goal_tolerance: false
 
   # Forward Simulation Parameters
-  sim_time: 2.0
+  sim_time: 1.0
   sim_granularity: 0.02
   angular_sim_granularity: 0.02
-  vx_samples: 6
+  vx_samples: 10
   vtheta_samples: 20
   controller_frequency: 20.0
 
   # Trajectory scoring parameters
   meter_scoring: true # Whether the gdist_scale and pdist_scale parameters should assume that goal_distance and path_distance are expressed in units of meters or cells. Cells are assumed by default (false).
-  occdist_scale:  0.1 #The weighting for how much the controller should attempt to avoid obstacles. default 0.01
+  occdist_scale:  0.2 #The weighting for how much the controller should attempt to avoid obstacles. default 0.01
   pdist_scale: 0.75  #     The weighting for how much the controller should stay close to the path it was given . default 0.6
   gdist_scale: 1.0 #     The weighting for how much the controller should attempt to reach its local goal, also controls speed  default 0.8
 
