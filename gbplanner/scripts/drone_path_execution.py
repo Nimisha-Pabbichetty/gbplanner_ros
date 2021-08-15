@@ -59,7 +59,8 @@ class drone_path_execution:
         i=bisect(breakpoints,x_vel)
         return x_length[i]
 
-    def vlengthy(self,y_vel, breakpoints=[0,0.01,0.05,0.1,0.17,0.25],y_length=[0,0.005,0.01,0.075,0.1,0.2,0.35]):
+    #y values need to be tuned
+    def vlengthy(self,y_vel, breakpoints=[0,0.01,0.05,0.1,0.17,0.25],y_length=[0,0.005,0.01,0.075,0.1,0.25,0.35]):
         i=bisect(breakpoints,y_vel)
         return y_length[i]
 
@@ -71,8 +72,8 @@ class drone_path_execution:
         i=bisect(breakpoints,z_angvel)
         return z_length[i]
 
-
-    def PoseStamped_2_mat(self,p):
+    # local global pose calc
+    '''def PoseStamped_2_mat(self,p):
         q = p.pose.orientation
         pos = p.pose.position
         T = quaternion_matrix([q.x,q.y,q.z,q.w])
@@ -91,7 +92,7 @@ class drone_path_execution:
         t_in = T_in[:3,[-1]]
         R_out = R_in.T
         t_out = -np.matmul(R_out,t_in)
-        return np.vstack((np.hstack((R_out,t_out)),np.array([0, 0, 0, 1])))
+        return np.vstack((np.hstack((R_out,t_out)),np.array([0, 0, 0, 1]))) '''
 
     def update_lee_controller(self,twist):
         #converting Twist to MultiDOFTrajectory to publish to lee position controller node
@@ -110,8 +111,8 @@ class drone_path_execution:
 
         trajectory_point_.z=1.78
 
-
-        LocalPose = self.PoseStamped_2_mat(self.odom_pos)
+        #local global pose calc
+        '''LocalPose = self.PoseStamped_2_mat(self.odom_pos)
         GoalPose = self.PoseStamped_2_mat(self.current_setpoint)
         LocalPoseInv=self.T_inv(LocalPose)
         Diff=np.matmul(GoalPose,LocalPoseInv)
@@ -127,15 +128,33 @@ class drone_path_execution:
         elif(twist.linear.y<0):
             trajectory_point_.y = SetPose.pose.position.y-self.linear_velocity_vector_length_y
 
-        '''if(twist.linear.z>=0):
+        if(twist.linear.z>=0):
             trajectory_point_.z = SetPose.pose.position.z+self.linear_velocity_vector_length_z   
         elif(twist.linear.z<0):
-            trajectory_point_.z = SetPose.pose.position.z-self.linear_velocity_vector_length_z'''
+            trajectory_point_.z = SetPose.pose.position.z-self.linear_velocity_vector_length_z
 
         if(twist.angular.z>0):
             quat.z= SetPose.pose.orientation.z+ self.angular_velocity_vector_length   
         elif(twist.angular.z<0):
-            quat.z = SetPose.pose.orientation.z-self.angular_velocity_vector_length
+            quat.z = SetPose.pose.orientation.z-self.angular_velocity_vector_length'''
+
+
+        if(twist.linear.x>=0):
+            trajectory_point_.x = self.odom_pos.pose.position.x+self.linear_velocity_vector_length_x   
+        elif(twist.linear.x<0):
+            trajectory_point_.x = self.odom_pos.pose.position.x-self.linear_velocity_vector_length_x
+
+        if(twist.linear.y>=0):
+            trajectory_point_.y = self.odom_pos.pose.position.y+self.linear_velocity_vector_length_y   
+        elif(twist.linear.y<0):
+            trajectory_point_.y = self.odom_pos.pose.position.y-self.linear_velocity_vector_length_y
+
+        if(twist.angular.z>0):
+            quat.z= self.odom_pos.pose.orientation.z+ self.angular_velocity_vector_length   
+        elif(twist.angular.z<0):
+            quat.z = self.odom_pos.pose.orientation.z-self.angular_velocity_vector_length
+
+
         quat.w=0.99
         traj = MultiDOFJointTrajectory()
 

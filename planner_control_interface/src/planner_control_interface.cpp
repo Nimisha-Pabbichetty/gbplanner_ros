@@ -402,7 +402,7 @@ void PlannerControlInterface::run() {
       else if ((trigger_mode_ == PlannerTriggerModeType::kAuto) || (run_en_) && !planning_success_) {
         run_en_ = false;
         //planning_success_=false;
-        ROS_INFO_STREAM(
+        ROS_INFO_STREAM_THROTTLE(1,
             "PlannerControlInterface: Running Planner ("
             << std::string(trigger_mode_ == PlannerTriggerModeType::kAuto
                                ? "kAuto"

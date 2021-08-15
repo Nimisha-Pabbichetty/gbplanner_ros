@@ -12,8 +12,8 @@
         <param name="angle_max" value="3.1459"/>
         <param name="range_min" value="0.0"/>
         <param name="range_max" value="15.0"/>
-        <param name="min_height" value="-0.20"/>
-        <param name="max_height" value="0.1"/>
+        <param name="min_height" value="-0.20"/> <!-- ground is seen on costmap -->
+        <param name="max_height" value="0.2"/>
     </node>
 
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
