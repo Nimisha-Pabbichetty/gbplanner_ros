@@ -18,8 +18,8 @@
   </include>
 
   
-  <group ns="robot1">    
-    <arg name="robot_name" default="robot1"/>
+  <group ns="r0">    
+    <arg name="robot_name" default="r0"/>
 
      <!-- Config files  -->
     <arg name="gbplanner_config_file" default="$(find gbplanner)/config/$(arg robot_name)/gbplanner_config.yaml"/>
@@ -79,8 +79,8 @@
     </node>  
 </group>
 
-<group ns="robot2">
-    <arg name="robot_name" default="robot2"/>
+<group ns="r1">
+    <arg name="robot_name" default="r1"/>
      <!-- Config files  -->
     <arg name="gbplanner_config_file" default="$(find gbplanner)/config/$(arg robot_name)/gbplanner_config.yaml"/>
     <arg name="pci_file" default="$(find gbplanner)/config/$(arg robot_name)/planner_control_interface_sim_config.yaml"/>
