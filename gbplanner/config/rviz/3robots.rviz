@@ -102,7 +102,7 @@ Visualization Manager:
           Length: 5
           Name: BaseLink
           Radius: 0.30000001192092896
-          Reference Frame: robot1/base_link
+          Reference Frame: r0/base_link
           Value: true
         - Class: rviz/Axes
           Enabled: true
@@ -245,7 +245,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /robot1/gbplanner_node/occupied_nodes
+          Marker Topic: /r0/gbplanner_node/occupied_nodes
           Name: Occupied
           Namespaces:
             {}
@@ -263,7 +263,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: false
-          Marker Topic: /robot1/gbplanner_node/occupied_nodes
+          Marker Topic: /r0/gbplanner_node/occupied_nodes
           Name: Occupied
           Namespaces:
             {}
@@ -310,7 +310,7 @@ Visualization Manager:
           Length: 5
           Name: BaseLink
           Radius: 0.30000001192092896
-          Reference Frame: robot2/base_link
+          Reference Frame: r1/base_link
           Value: true
         - Class: rviz/Axes
           Enabled: true
@@ -425,7 +425,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: false
-          Marker Topic: /robot1/gbplanner_node/occupied_nodes
+          Marker Topic: /r0/gbplanner_node/occupied_nodes
           Name: Occupied
           Namespaces:
             {}
@@ -440,7 +440,7 @@ Visualization Manager:
           Length: 5
           Name: BaseLink
           Radius: 0.30000001192092896
-          Reference Frame: robot3/base_link
+          Reference Frame: r2/base_link
           Value: true
         - Class: rviz/Axes
           Enabled: true
@@ -513,7 +513,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /robot3/vis/planning_homing_path
+          Marker Topic: /r2/vis/planning_homing_path
           Name: HomingPath
           Namespaces:
             {}
@@ -521,7 +521,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /robot3/vis/sampler
+          Marker Topic: /r2/vis/sampler
           Name: Sampler
           Namespaces:
             {}
@@ -529,7 +529,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /robot3/vis/ref_path
+          Marker Topic: /r2/vis/ref_path
           Name: RefPath
           Namespaces:
             {}
@@ -537,7 +537,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /robot3/vis/planning_global_path
+          Marker Topic: /r2/vis/planning_global_path
           Name: PlanningGlobalPath
           Namespaces:
             {}
@@ -550,12 +550,12 @@ Visualization Manager:
         - Class: voxblox_rviz_plugin/VoxbloxMesh
           Enabled: true
           Name: VoxbloxMesh
-          Topic: /robot2/gbplanner_node/mesh
+          Topic: /r1/gbplanner_node/mesh
           Unreliable: false
           Value: true
         - Class: rviz/MarkerArray
           Enabled: false
-          Marker Topic: /robot1/gbplanner_node/occupied_nodes
+          Marker Topic: /r0/gbplanner_node/occupied_nodes
           Name: Occupied
           Namespaces:
             {}
